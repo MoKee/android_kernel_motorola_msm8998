@@ -332,7 +332,7 @@ struct request_queue {
 	 */
 	struct delayed_work	delay_work;
 
-	struct backing_dev_info	backing_dev_info;
+	struct backing_dev_info	*backing_dev_info;
 
 	/*
 	 * The queue owner gets to use this for whatever they like.
@@ -888,8 +888,8 @@ static inline unsigned int blk_max_size_offset(struct request_queue *q,
 	if (!q->limits.chunk_sectors)
 		return q->limits.max_sectors;
 
-	return q->limits.chunk_sectors -
-			(offset & (q->limits.chunk_sectors - 1));
+	return min(q->limits.max_sectors, (unsigned int)(q->limits.chunk_sectors -
+			(offset & (q->limits.chunk_sectors - 1))));
 }
 
 static inline unsigned int blk_rq_get_max_sectors(struct request *rq)
